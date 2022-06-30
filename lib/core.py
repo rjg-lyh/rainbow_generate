@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 import random
 import mtutils as mt
+import math
 
 
 def sub_imgs(img, name):
@@ -23,11 +24,17 @@ def rand_shake_2D(data, x, y, var):
 
 def make_gaussian_points(data, x, y):
     H, W = data.shape[:2]
-    sigma = random.randint(5, 20)
+    sigma = random.randint(5, 30)
     size = max(H, W)
+    T = random.randint(30, 130)
+
+    Xs, Ys = np.meshgrid(np.arange(size * 2), np.arange(size * 2))
+    dis_mat = ((Xs - size) ** 2 + (Ys - size) ** 2) ** 0.5
+    cos_mask = (np.cos(dis_mat / T * 2 * np.pi) + 1) / 2
+
     img = mt.gaussian_mask_2d(size * 2, sigma)
     bbox = [size - x, size - y, size - x + W, size - y + H]
-    crop = mt.crop_data_around_boxes(img, bbox)
+    crop = mt.crop_data_around_boxes(img * cos_mask, bbox)
     return crop
 
 def change_color(img, mask):
